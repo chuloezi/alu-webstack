@@ -2,11 +2,23 @@
 # Displays DNS information about subdomains
 
 show_info() {
-    ip=$(dig +short "$1.$2" | awk 'NR==1 {print $1}')
-    echo "The subdomain $1 is a A record and points to $ip"
+    local sub="$1"
+    local domain="$2"
+    
+    # Query dig for the answer section and extract record type and destination IP/target using awk
+    local res
+    res=$(dig "${sub}.${domain}" | awk '/^'"${sub}.${domain}"'\./ {print $4, $5}')
+    
+    local record_type
+    record_type=$(echo "$res" | awk '{print $1}')
+    
+    local destination
+    destination=$(echo "$res" | awk '{print $2}')
+
+    echo "The subdomain ${sub} is a ${record_type} record and points to ${destination}"
 }
 
-if [ $# -eq 2 ]; then
+if [ "$#" -eq 2 ]; then
     show_info "$2" "$1"
 else
     show_info "www" "$1"
